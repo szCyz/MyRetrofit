@@ -38,7 +38,6 @@ public class RetrofitManager {
     public static synchronized RetrofitManager getInstance(Context context){
         mContext = context;
         if (mRetrofitManager == null){
-            Log.e("OkHttp","new RetrofitManager");
             mRetrofitManager = new RetrofitManager();
         }
         return mRetrofitManager;
@@ -66,76 +65,55 @@ public class RetrofitManager {
     }
 
     public <T> T createReq(Class<T> reqServer){
-        Log.e("OkHttp","createReq："+mRetrofit.baseUrl());
         return mRetrofit.create(reqServer);
     }
 
     //初始化Retrofit
     private void initRetrofit(){
         mRetrofit = new Retrofit.Builder()
-                .baseUrl("https://api.douban.com/") //设置网络请求的Url地址
+                .baseUrl("http://api.map.baidu.com/") //设置网络请求的Url地址
                 .addConverterFactory(GsonConverterFactory.create()) //设置数据解析器
                 .addCallAdapterFactory(RxJava2CallAdapterFactory.create())
                 .client(mOkHttpClient)
                 .build();
-        Log.v("OkHttp","initRetrofit");
     }
 
-    private static class RequestInterceptor implements Interceptor {
+    /**
+     * 自定义拦截器
+     */
+    public class RequestInterceptor implements Interceptor {
         @Override
         public Response intercept(Chain chain) throws IOException {
             Request request = chain.request();
-            Log.e("aaa",request.toString());
             if (request.method().equals("POST")) {
-                if (request.body() instanceof FormBody) {
-                    request = addPostFormParams(request);
-                } else if (request.body() instanceof MultipartBody) {
-                    request = addPostMultiParams(request);
-                }
+
             } else if (request.method().equals("GET")) {
                 request = addGetParams(chain);
-                Log.e("aaa",request.toString());
             }
             return chain.proceed(request);
         }
     }
-    //上传时
-    private static Request addPostMultiParams(Request request) {
-        // 添加公共参数
-        MultipartBody.Builder builder = new MultipartBody.Builder().addFormDataPart("deviceId", "123456");
-        MultipartBody oldBody = (MultipartBody) request.body();
-        for (int i = 0; i < oldBody.size(); i++) {
-            builder.addPart(oldBody.part(i));
-        }
-        oldBody = builder.build();
-        request = request.newBuilder().post(oldBody).build();
-        return request;
-    }
-    //正常时
-    private static Request addPostFormParams(Request request) {
-        FormBody.Builder bodyBuilder = new FormBody.Builder();
-        FormBody formBody = (FormBody) request.body();
-        //把原来的参数添加到新的构造器，（因为没找到直接添加，所以就new新的）
-        for (int i = 0; i < formBody.size(); i++) {
-            bodyBuilder.addEncoded(formBody.encodedName(i), formBody.encodedValue(i));
-        }
-        //添加公共参数
-        formBody = bodyBuilder
-                .addEncoded("deviceId", "123456").build();
-        request = request.newBuilder().post(formBody).build();
-        return request;
-    }
 
+    /**
+     * Get请求需添加的公共参数
+     * @param chain
+     * @return
+     */
     private static Request addGetParams(Interceptor.Chain chain) {
         Request request;
         Request oldRequest = chain.request();
         // 添加公共参数
         HttpUrl authorizedUrlBuilder = oldRequest.url()
                 .newBuilder()
-                .addQueryParameter("deviceId", "123456").build();
+                .addQueryParameter("ak","6tYzTvGZSOpYB5Oc2YGGOKt8")
+                .addQueryParameter("output", "json").build();
+
         request = oldRequest.newBuilder()
                 .url(authorizedUrlBuilder)
                 .build();
         return request;
     }
+
+
+
 }

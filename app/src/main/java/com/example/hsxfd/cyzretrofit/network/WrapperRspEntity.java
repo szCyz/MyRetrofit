@@ -1,27 +1,41 @@
 package com.example.hsxfd.cyzretrofit.network;
 
+/**
+ * resultapi model包装器
+ * @param <T>
+ */
 public class WrapperRspEntity<T> {
-    private int count;
-    private T books;
+    private String status;
+    private int error;
+    private String message;
+    private T results;
 
-    public int getCount() {
-        return count;
+    public int getError() {
+        return error;
     }
 
-    public void setCount(int count) {
-        this.count = count;
+    public void setError(int error) {
+        this.error = error;
     }
 
-    public T getBooks() {
-        return books;
+    public String getStatus() {
+        return status;
     }
 
-    public void setBooks(T books) {
-        this.books = books;
+    public String getMessage() {
+        return message;
     }
 
-    public WrapperRspEntity(int count, T books) {
-        this.count = count;
-        this.books = books;
+    public T getResults() {
+        return results;
+    }
+
+    @Override
+    public String toString() {
+        return "WrapperRspEntity{" +
+                "status='" + status + '\'' +
+                ", error=" + error +
+                ", message='" + message + '\'' +
+                '}';
     }
 }

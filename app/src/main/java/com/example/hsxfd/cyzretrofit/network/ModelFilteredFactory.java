@@ -18,17 +18,15 @@ public class ModelFilteredFactory {
     private final static ObservableTransformer transformer = new SimpleTransformer();
     /**
      * 将Observable<WrapperRspEntity<T>>转化Observable<T>,并处理WrapperRspEntity
-     *
      * @return 返回过滤后的Observable.
      */
     @SuppressWarnings("unchecked")
     public static <T> Observable<T> compose(Observable<WrapperRspEntity<T>> observable){
-        Log.e("OkHttp","compose");
         return observable.compose(transformer);
     }
 
     /**
-     * 这个类的意义就是转换Observable.
+     * 转换Observable.
      */
     private static class SimpleTransformer<T> implements ObservableTransformer<T, T> {
         //这里对Observable,进行一般的通用设置.不用每次用Observable都去设置线程以及重连设置
@@ -56,17 +54,15 @@ public class ModelFilteredFactory {
         return Observable.create(new ObservableOnSubscribe() {
             @Override
             public void subscribe(ObservableEmitter e) throws Exception {
-                Log.e("OkHttp",response.toString());
-
-//                if (response.getCount()==20) {
-//                    if (!e.isDisposed()) {
-                        e.onNext(response);
-//                    }
-//                }else{
-//                    if (!e.isDisposed()) {
-//                        e.onError(new TimeoutException());
-//                    }
-//                }
+                if (response.getError()==0) {
+                    if (!e.isDisposed()) {
+                        e.onNext(response.getResults());
+                    }
+                }else{
+                    if (!e.isDisposed()) {
+                        e.onError(new APIException(response.getStatus(),response.getMessage()));
+                    }
+                }
             }
         });
     }
